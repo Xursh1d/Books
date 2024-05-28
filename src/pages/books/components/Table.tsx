@@ -8,6 +8,7 @@ import { ErrorMessage } from '../../../types/authTypes';
 import { setErrorMessage } from '../../../features/booksSlice';
 import SearchTable from './search/SearchTable';
 import BooksTable from './books/BooksTable';
+import { useEffect } from "react";
 
 interface ITableComponentProps { books: IAllBooksData[], isLoading: boolean }
 
@@ -18,10 +19,12 @@ export default function TableComponent({ books, isLoading }: ITableComponentProp
         skip: !queryString,
     })
 
-    if (isError && error) {
-        const responseError = error as ErrorMessage;
-        dispatch(setErrorMessage(responseError?.data?.message || "Internal server error"))
-    }
+    useEffect(() => {
+        if (isError && error) {
+            const responseError = error as ErrorMessage;
+            dispatch(setErrorMessage(responseError?.data?.message || "Internal server error"))
+        }
+    }, [isError, error])
 
     return (
         <TableContainer component={Paper}>
