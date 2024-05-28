@@ -12,6 +12,7 @@ import { useAppDispatch, useAppSelector } from '../../features/store';
 import { setErrorMessage, setSuccessMessage, setUpdatedBook } from '../../features/booksSlice';
 import { cardStyle, centerStyle } from '../styles';
 import { ErrorMessage } from '../../types/authTypes';
+import { useEffect } from "react";
 
 const validationSchema = Yup.object({
     status: Yup.string().required("status is required"),
@@ -34,19 +35,21 @@ export default function UpdateBook() {
         }
     });
 
-    const cancelCallBack = () => {
-        dispatch(setUpdatedBook(null))
-    }
+    useEffect(() => {
+        if (isSuccess && data?.isOk) {
+            cancelCallBack()
+            dispatch(setSuccessMessage("Updated successfully"))
+        }
+    }, [isSuccess, data]);
 
-    if (isSuccess && data?.isOk) {
-        cancelCallBack()
-        dispatch(setSuccessMessage("Updated successfully"))
-    }
+    useEffect(() => {
+        if (isError && error) {
+            const responseError = error as ErrorMessage
+            dispatch(setErrorMessage(responseError?.data?.message || "Internal server error"))
+        }
+    }, [isError, error]);
 
-    if (isError && error) {
-        const responseError = error as ErrorMessage
-        dispatch(setErrorMessage(responseError?.data?.message || "Internal server error"))
-    }
+    const cancelCallBack = () => dispatch(setUpdatedBook(null))
 
     return (
         <Modal

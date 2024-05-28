@@ -9,6 +9,7 @@ import { useAppDispatch } from '../../features/store';
 import { setErrorMessage, setSuccessMessage } from '../../features/booksSlice';
 import { cardStyle, centerStyle } from '../styles';
 import { ErrorMessage } from '../../types/authTypes';
+import { useEffect } from "react";
 
 const validationSchema = Yup.object({
     isbn: Yup.string().required("Isbn is required"),
@@ -27,15 +28,19 @@ export default function CreateBook() {
         }
     });
 
-    if (isSuccess && data?.isOk) {
-        navigate("/")
-        dispatch(setSuccessMessage("Created successfully"))
-    }
+    useEffect(() => {
+        if (isSuccess && data?.isOk) {
+            navigate("/")
+            dispatch(setSuccessMessage("Created successfully"))
+        }
+    }, [isSuccess, data]);
 
-    if (isError && error) {
-        const responseError = error as ErrorMessage;
-        dispatch(setErrorMessage(responseError.data.message || "Internal server error"))
-    }
+    useEffect(() => {
+        if (isError && error) {
+            const responseError = error as ErrorMessage;
+            dispatch(setErrorMessage(responseError.data.message || "Internal server error"))
+        }
+    }, [isError, error]);
 
     return (
         <Modal

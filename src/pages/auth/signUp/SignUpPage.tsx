@@ -2,11 +2,12 @@ import { TextField, Button, Typography, Card } from '@mui/material';
 import { useSignUpMutation } from '../../../features/api/authApi';
 import * as Yup from "yup";
 import { useFormik } from 'formik';
-import { SignUpRequest } from '../../../types/authTypes';
+import { ErrorMessage, SignUpRequest } from '../../../types/authTypes';
 import Box from '@mui/material/Box';
 import { Link, useNavigate } from 'react-router-dom';
 import Toaster from '../../../helpers/Toaster';
 import { boxStyle, authCardStyle, centerStyle } from '../../styles';
+import { useState, useEffect } from "react";
 
 const validationSchema = Yup.object({
     name: Yup.string().required("Your name is required"),
@@ -18,6 +19,8 @@ const validationSchema = Yup.object({
 function SignUpPage() {
     const [signUp, { isLoading, isError, error, isSuccess, data }] = useSignUpMutation();
     const navigate = useNavigate()
+    const [responseError, setResponseError] = useState<string | null>(null)
+
 
     const formik = useFormik({
         initialValues: { name: "", email: "", key: "", secret: "" },
@@ -27,10 +30,19 @@ function SignUpPage() {
         }
     });
 
-    if (isSuccess && data?.isOk) {
-        localStorage.setItem("user", JSON.stringify(data))
-        navigate("/login")
-    }
+    useEffect(() => {
+        if (isSuccess && data?.isOk) {
+            localStorage.setItem("user", JSON.stringify(data));
+            navigate("/login");
+        }
+    }, [isSuccess, data]);
+
+    useEffect(() => {
+        if (isError && error) {
+            const responseError = error as ErrorMessage;
+            setResponseError(responseError.data.message || "Internal server error");
+        }
+    }, [isError, error]);
 
     return (
         <Box sx={boxStyle}>
@@ -95,7 +107,7 @@ function SignUpPage() {
                         </Link>
                     </Typography>
                 </form>
-                {isError && <Toaster type='error' message={error?.data?.message || "Something went wrong"} />}
+                {isError && <Toaster type='error' message={responseError || "Something went wrong"} />}
             </Card>
         </Box>
     );
